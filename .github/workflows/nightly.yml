@@ -1,0 +1,55 @@
+name: Nightly Build
+
+on:
+  schedule:
+    - cron: '0 2 * * *' # This runs every night at 2:00 AM UTC
+  workflow_dispatch: # This adds a button so you can trigger a build manually anytime
+
+permissions:
+  contents: write
+
+jobs:
+  nightly:
+    runs-level: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.25' # Matches the project's required Go version
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22' # Matches the project's frontend build engine
+
+      - name: Install Frontend Dependencies
+        run: yarn install
+
+      - name: Build Frontend Assets
+        run: yarn build
+
+      - name: Run GoReleaser (Build Binaries)
+        uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean --snapshot
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Nightly Release
+        uses: andelf/nightly-release@main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: latest
+          name: 'Nightly Build'
+          body: 'Automated nightly build matching the latest master branch commits.'
+          files: |
+            dist/*.exe
+            dist/*.zip
