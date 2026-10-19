@@ -3,14 +3,14 @@ name: Nightly Build
 on:
   schedule:
     - cron: '0 2 * * *' # This runs every night at 2:00 AM UTC
-  workflow_dispatch: # This adds a button so you can trigger a build manually anytime
+  workflow_dispatch: # Allows you to trigger a build manually anytime
 
 permissions:
   contents: write
 
 jobs:
   nightly:
-    runs-level: ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -20,12 +20,12 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.25' # Matches the project's required Go version
+          go-version: '1.25' 
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22' # Matches the project's frontend build engine
+          node-version: '22' 
 
       - name: Install Frontend Dependencies
         run: yarn install
